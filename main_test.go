@@ -13,6 +13,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
+	"pos.com/app/api"
 	"pos.com/app/db"
 	"pos.com/app/domain"
 	"pos.com/app/dto"
@@ -65,7 +66,7 @@ func makeRequest(method, url string, body interface{}, isAuthenticatedRequest bo
 	}
 
 	writer := httptest.NewRecorder()
-	Router().ServeHTTP(writer, request)
+	api.Router().ServeHTTP(writer, request)
 	return writer
 }
 
@@ -80,7 +81,7 @@ func setup() {
 	}
 
 	db.Connect()
-	//db.Database.AutoMigrate(&domain.Product{})
+	db.Database.AutoMigrate(&domain.Product{})
 	db.Database.Create(&domain.Product{Name: "D42", Barcode: "100"})
 }
 
