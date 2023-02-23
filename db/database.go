@@ -6,7 +6,6 @@ import (
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"pos.com/app/domain"
 )
 
 var Database *gorm.DB
@@ -22,7 +21,5 @@ func Connect() {
 	} else {
 		fmt.Println("Successfully connected to the database")
 	}
-
-	Database.AutoMigrate(&domain.Product{})
 
 }

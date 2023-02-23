@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	"math"
 
+	"github.com/jaswdr/faker"
 	"github.com/joho/godotenv"
 	"pos.com/app/api"
 	"pos.com/app/db"
@@ -19,4 +21,27 @@ func main() {
 func setupDatabase() {
 	db.Connect()
 	db.Database.AutoMigrate(&domain.Product{})
+
+	flagSeed := true
+
+	if flagSeed {
+		fake := faker.New()
+		p := fake.Person()
+
+		// migrator := db.Database.Migrator()
+		// migrator.DropTable(&domain.Product{})
+
+		x := 128.3456
+		price := math.Floor(x*100) / 100
+
+		for i := 0; i < 10; i++ {
+			db.Database.Create(&domain.Product{
+				Barcode: p.SSN(),
+				Price:   price,
+				Name:    p.FirstName(),
+			})
+
+		}
+	}
+
 }

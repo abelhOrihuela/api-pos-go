@@ -26,5 +26,6 @@ func Router() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/heartbeat", handlers.Heartbeat).Methods(http.MethodGet)
 	r.HandleFunc("/products", handlers.GetAllProducts).Methods(http.MethodGet)
+	r.HandleFunc("/search", handlers.Search).Methods(http.MethodGet)
 	return r
 }
