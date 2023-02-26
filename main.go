@@ -28,14 +28,15 @@ func setupDatabase() {
 		fake := faker.New()
 		p := fake.Person()
 
-		// migrator := db.Database.Migrator()
-		// migrator.DropTable(&domain.Product{})
+		//migrator := db.Database.Migrator()
+		//migrator.DropTable(&domain.Product{})
 
 		x := 128.3456
 		price := math.Floor(x*100) / 100
 
 		for i := 0; i < 10; i++ {
 			db.Database.Create(&domain.Product{
+				// Id:      uint(1),
 				Barcode: p.SSN(),
 				Price:   price,
 				Name:    p.FirstName(),

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"pos.com/app/handlers"
 )
 
@@ -18,11 +19,26 @@ func NewServer(listenAddr string) *Server {
 }
 
 func (s *Server) Start() error {
+
 	http.Handle("/", Router())
-	return http.ListenAndServe(s.listenAddr, nil)
+
+	cors := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{
+			http.MethodPost,
+			http.MethodGet,
+		},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: false,
+	})
+
+	handler := cors.Handler(Router())
+
+	return http.ListenAndServe(s.listenAddr, handler)
 }
 
 func Router() *mux.Router {
+
 	r := mux.NewRouter()
 	r.HandleFunc("/heartbeat", handlers.Heartbeat).Methods(http.MethodGet)
 	r.HandleFunc("/products", handlers.GetAllProducts).Methods(http.MethodGet)

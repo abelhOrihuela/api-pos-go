@@ -18,15 +18,13 @@ type Product struct {
 
 func Search(query string) []Product {
 	p := make([]Product, 0)
+	db.Database.Where("barcode LIKE ? OR name LIKE ?", "%"+query+"%", "%"+query+"%").Find(&p)
 
-	db.Database.Find(&p)
-	db.Database.Where("barcode = ?", query).Find(&p)
 	return p
 }
 
 func GetAll() []Product {
 	c := make([]Product, 0)
-
 	db.Database.Find(&c)
 
 	return c
@@ -34,7 +32,7 @@ func GetAll() []Product {
 
 func (p Product) ToDto() dto.ProductResponse {
 	return dto.ProductResponse{
-		Id:          p.ID,
+		Id:          p.Id,
 		Name:        p.Name,
 		Description: p.Description,
 		Barcode:     p.Barcode,
