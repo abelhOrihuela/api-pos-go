@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 	"pos.com/app/db"
 	"pos.com/app/dto"
+	"pos.com/app/errs"
 )
 
 type Product struct {
@@ -16,11 +17,24 @@ type Product struct {
 	Price       float64 `db:"price"`
 }
 
-func Search(query string) []Product {
-	p := make([]Product, 0)
-	db.Database.Where("barcode LIKE ? OR name LIKE ?", "%"+query+"%", "%"+query+"%").Find(&p)
+func Create(req dto.ProductRequest) (*Product, *errs.AppError) {
 
-	return p
+	err := req.Validate()
+
+	if err != nil {
+		return nil, err
+	}
+
+	p := Product{
+		Barcode:     req.Barcode,
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+	}
+	db.Database.Create(&p)
+
+	return &p, nil
+
 }
 
 func GetAll() []Product {
@@ -28,6 +42,13 @@ func GetAll() []Product {
 	db.Database.Find(&c)
 
 	return c
+}
+
+func Search(query string) []Product {
+	p := make([]Product, 0)
+	db.Database.Where("barcode LIKE ? OR name LIKE ?", "%"+query+"%", "%"+query+"%").Find(&p)
+
+	return p
 }
 
 func (p Product) ToDto() dto.ProductResponse {

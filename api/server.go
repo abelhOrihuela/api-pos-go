@@ -40,8 +40,13 @@ func (s *Server) Start() error {
 func Router() *mux.Router {
 
 	r := mux.NewRouter()
+	// Heartbeat endpoint
 	r.HandleFunc("/heartbeat", handlers.Heartbeat).Methods(http.MethodGet)
-	r.HandleFunc("/products", handlers.GetAllProducts).Methods(http.MethodGet)
+
+	// Products endpoints
+	r.HandleFunc("/products", handlers.GetAll).Methods(http.MethodGet)
+	r.HandleFunc("/products", handlers.Create).Methods(http.MethodPost)
+
 	r.HandleFunc("/search", handlers.Search).Methods(http.MethodGet)
 	return r
 }

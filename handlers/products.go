@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/mrz1836/go-sanitize"
@@ -8,7 +9,25 @@ import (
 	"pos.com/app/dto"
 )
 
-func GetAllProducts(rw http.ResponseWriter, r *http.Request) {
+func Create(rw http.ResponseWriter, r *http.Request) {
+	var request dto.ProductRequest
+	err := json.NewDecoder(r.Body).Decode(&request)
+
+	if err != nil {
+		WriteResponse(rw, http.StatusBadRequest, err.Error())
+	} else {
+		p, err := domain.Create(request)
+
+		if err != nil {
+			WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
+		} else {
+			WriteResponse(rw, http.StatusOK, p.ToDto())
+		}
+	}
+
+}
+
+func GetAll(rw http.ResponseWriter, r *http.Request) {
 	var response []dto.ProductResponse
 	c := domain.GetAll()
 
