@@ -17,7 +17,7 @@ type Product struct {
 	Price       float64 `db:"price"`
 }
 
-func Create(req dto.ProductRequest) (*Product, *errs.AppError) {
+func CreateProduct(req dto.ProductRequest) (*Product, *errs.AppError) {
 
 	err := req.Validate()
 

@@ -9,14 +9,14 @@ import (
 	"pos.com/app/dto"
 )
 
-func Create(rw http.ResponseWriter, r *http.Request) {
+func CreateProduct(rw http.ResponseWriter, r *http.Request) {
 	var request dto.ProductRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
 
 	if err != nil {
 		WriteResponse(rw, http.StatusBadRequest, err.Error())
 	} else {
-		p, err := domain.Create(request)
+		p, err := domain.CreateProduct(request)
 
 		if err != nil {
 			WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
@@ -27,7 +27,7 @@ func Create(rw http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetAll(rw http.ResponseWriter, r *http.Request) {
+func GetProducts(rw http.ResponseWriter, r *http.Request) {
 	var response []dto.ProductResponse
 	c := domain.GetAll()
 

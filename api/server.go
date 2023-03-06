@@ -44,8 +44,10 @@ func Router() *mux.Router {
 	r.HandleFunc("/heartbeat", handlers.Heartbeat).Methods(http.MethodGet)
 
 	// Products endpoints
-	r.HandleFunc("/products", handlers.GetAll).Methods(http.MethodGet)
-	r.HandleFunc("/products", handlers.Create).Methods(http.MethodPost)
+	r.HandleFunc("/products", handlers.GetProducts).Methods(http.MethodGet)
+	r.HandleFunc("/products", handlers.CreateProduct).Methods(http.MethodPost)
+
+	r.HandleFunc("/users", handlers.CreateUser).Methods(http.MethodPost)
 
 	r.HandleFunc("/search", handlers.Search).Methods(http.MethodGet)
 	return r

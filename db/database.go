@@ -12,8 +12,8 @@ var Database *gorm.DB
 
 func Connect() {
 	var err error
-	databaseName := os.Getenv("DB_NAME")
 
+	databaseName := os.Getenv("DB_NAME")
 	Database, err = gorm.Open(sqlite.Open(databaseName), &gorm.Config{})
 
 	if err != nil {

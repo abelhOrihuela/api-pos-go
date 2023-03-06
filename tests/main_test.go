@@ -1,6 +1,6 @@
 //
 
-package main
+package tests
 
 import (
 	"bytes"
@@ -67,6 +67,8 @@ func setup() {
 
 	db.Connect()
 	db.Database.AutoMigrate(&domain.Product{})
+	db.Database.AutoMigrate(&domain.Order{})
+	db.Database.AutoMigrate(&domain.User{})
 
 	seedDatabase()
 }
@@ -74,7 +76,8 @@ func setup() {
 func teardown() {
 	migrator := db.Database.Migrator()
 	migrator.DropTable(&domain.Product{})
-	//migrator.DropTable(&model.Entry{})
+	migrator.DropTable(&domain.Order{})
+	migrator.DropTable(&domain.User{})
 }
 
 func seedDatabase() {
