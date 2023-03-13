@@ -36,19 +36,30 @@ func CreateUser(req dto.UserRequest) (*User, *errs.AppError) {
 		return nil, errs.NewUnexpectedDatabaseError("Unexpected error during the creation of user" + err.Error())
 	}
 	return &u, nil
-
 }
 
-func (u User) ToDto() dto.UserResponse {
-	return dto.UserResponse{
-		Username: u.Username,
-		Email:    u.Email,
-		Role:     u.Role,
+func FindUserByEmail(req dto.LoginRequest) (*User, *errs.AppError) {
+	var user User
+
+	err := db.Database.Where(&User{Email: req.Email}).First(&user).Error
+
+	if err != nil {
+		return nil, errs.NewNotFoundError("User not found")
 	}
+	return &user, nil
+}
+
+func (user *User) ValidatePassword(password string) *errs.AppError {
+
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+
+	if err != nil {
+		return errs.NewValidationError("¡Password incorrecto.!")
+	}
+	return nil
 }
 
 func (user *User) BeforeSave(*gorm.DB) error {
-
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -58,6 +69,10 @@ func (user *User) BeforeSave(*gorm.DB) error {
 	return nil
 }
 
-func (user *User) ValidatePassword(password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+func (u User) ToDto() dto.UserResponse {
+	return dto.UserResponse{
+		Username: u.Username,
+		Email:    u.Email,
+		Role:     u.Role,
+	}
 }

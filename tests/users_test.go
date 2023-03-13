@@ -18,7 +18,7 @@ func TestCreateUser(t *testing.T) {
 	}
 
 	// request api
-	writer := makeRequest("POST", "/users", user, false)
+	writer := makeRequest("POST", "/api/pos/users", user, true)
 
 	// parse response
 	var response dto.UserResponse
@@ -28,4 +28,18 @@ func TestCreateUser(t *testing.T) {
 	assert.Equal(t, "Jonh Doe", response.Username)
 	assert.Equal(t, "jonh@hello.com", response.Email)
 	assert.Equal(t, "cashier", response.Role)
+}
+
+func TestLogin(t *testing.T) {
+
+	user := dto.LoginRequest{
+		Email:    "jonh@hello.com",
+		Password: "secret",
+	}
+	writer := makeRequest("POST", "/api/public/login", user, false)
+
+	var response dto.TokenResponse
+	json.Unmarshal(writer.Body.Bytes(), &response)
+
+	assert.NotEmpty(t, response.AccessToken)
 }

@@ -16,6 +16,7 @@ import (
 	"pos.com/app/api"
 	"pos.com/app/db"
 	"pos.com/app/domain"
+	"pos.com/app/dto"
 )
 
 func TestMain(m *testing.M) {
@@ -26,7 +27,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestHeartbeat(t *testing.T) {
-	writer := makeRequest("GET", "/heartbeat", nil, false)
+	writer := makeRequest("GET", "/api/public/heartbeat", nil, false)
 
 	// parse response
 	var response map[string]interface{}
@@ -56,7 +57,22 @@ func makeRequest(method, url string, body interface{}, isAuthenticatedRequest bo
 }
 
 func bearerToken() string {
-	return ""
+
+	response := authUser()
+
+	return response.AccessToken
+}
+
+func authUser() dto.TokenResponse {
+	user := dto.LoginRequest{
+		Email:    "hola@robot.com",
+		Password: "secret",
+	}
+	writer := makeRequest("POST", "/api/public/login", user, false)
+
+	var response dto.TokenResponse
+	json.Unmarshal(writer.Body.Bytes(), &response)
+	return response
 }
 
 func setup() {
@@ -66,6 +82,7 @@ func setup() {
 	}
 
 	db.Connect()
+
 	db.Database.AutoMigrate(&domain.Product{})
 	db.Database.AutoMigrate(&domain.Order{})
 	db.Database.AutoMigrate(&domain.User{})
@@ -83,4 +100,6 @@ func teardown() {
 func seedDatabase() {
 	db.Database.Create(&domain.Product{Name: "New product", Barcode: "1001"})
 	db.Database.Create(&domain.Product{Name: "Old product", Barcode: "1002"})
+	db.Database.Create(&domain.User{Username: "testing", Email: "hola@robot.com", Password: "secret", Role: "admin"})
+
 }

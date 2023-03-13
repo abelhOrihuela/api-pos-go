@@ -15,12 +15,12 @@ func CreateUser(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		WriteResponse(rw, http.StatusBadRequest, err.Error())
 	} else {
-		p, err := domain.CreateUser(request)
+		u, err := domain.CreateUser(request)
 
 		if err != nil {
 			WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
 		} else {
-			WriteResponse(rw, http.StatusOK, p.ToDto())
+			WriteResponse(rw, http.StatusOK, u.ToDto())
 		}
 	}
 
