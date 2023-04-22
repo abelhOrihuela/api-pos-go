@@ -42,4 +42,17 @@ func TestLogin(t *testing.T) {
 	json.Unmarshal(writer.Body.Bytes(), &response)
 
 	assert.NotEmpty(t, response.AccessToken)
+	assert.Equal(t, http.StatusOK, writer.Code)
+
+}
+
+func TestMe(t *testing.T) {
+	writer := makeRequest("GET", "/api/pos/me", nil, true)
+
+	var response dto.UserResponse
+	json.Unmarshal(writer.Body.Bytes(), &response)
+
+	assert.NotEmpty(t, response)
+	assert.Equal(t, http.StatusOK, writer.Code)
+	assert.Equal(t, "hola@robot.com", response.Email)
 }

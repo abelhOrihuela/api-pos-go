@@ -22,6 +22,7 @@ func setupDatabase() {
 	db.Connect()
 	db.Database.AutoMigrate(&domain.Product{})
 	db.Database.AutoMigrate(&domain.Order{})
+	db.Database.AutoMigrate(&domain.OrderProduct{})
 	db.Database.AutoMigrate(&domain.User{})
 
 	flagSeed := true

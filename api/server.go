@@ -61,8 +61,15 @@ func addSignHandler(r *mux.Router) {
 
 	s := r.PathPrefix("/pos").Subrouter()
 
-	s.Use(helpers.ValidateJWT)
+	s.Use(helpers.MiddlewareAuth)
+
+	// authe verification
+	s.HandleFunc("/me", handlers.Me).Methods(http.MethodGet)
+
 	// Products endpoints
+	s.HandleFunc("/orders", handlers.CreateOrder).Methods(http.MethodPost)
+	s.HandleFunc("/orders", handlers.GetOrders).Methods(http.MethodGet)
+
 	s.HandleFunc("/products", handlers.GetProducts).Methods(http.MethodGet)
 	s.HandleFunc("/products", handlers.CreateProduct).Methods(http.MethodPost)
 	s.HandleFunc("/search", handlers.Search).Methods(http.MethodGet)

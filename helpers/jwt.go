@@ -34,24 +34,53 @@ func GenerateJWT(user *domain.User) (string, *errs.AppError) {
 	return tokenRaw, nil
 }
 
-func ValidateJWT(next http.Handler) http.Handler {
+func MiddlewareAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		token, err := getToken(r)
-
-		if err != nil {
-			writeResponse(rw, http.StatusUnprocessableEntity, errs.NewDefaultError(err.Error()).AsMessage())
+		if ValidateJWT(rw, r) {
+			next.ServeHTTP(rw, r)
 		} else {
-			_, ok := token.Claims.(jwt.MapClaims)
-
-			if ok && token.Valid {
-				next.ServeHTTP(rw, r)
-			} else {
-				writeResponse(rw, http.StatusUnprocessableEntity, errs.NewDefaultError("Invalid token to auth"))
-			}
-
+			writeResponse(rw, http.StatusUnprocessableEntity, errs.NewDefaultError("Invalid token to auth"))
 		}
 
 	})
+}
+
+func ValidateJWT(rw http.ResponseWriter, r *http.Request) bool {
+	token, err := getToken(r)
+
+	if err != nil {
+		return false
+	} else {
+		_, ok := token.Claims.(jwt.MapClaims)
+
+		if ok && token.Valid {
+			return true
+		} else {
+			return false
+		}
+
+	}
+
+}
+
+func CurrentUser(rw http.ResponseWriter, r *http.Request) (*domain.User, *errs.AppError) {
+
+	if ValidateJWT(rw, r) {
+		token, _ := getToken(r)
+		claims, _ := token.Claims.(jwt.MapClaims)
+		userId := uint(claims["id"].(float64))
+
+		user, err := domain.FindUserById(userId)
+		if err != nil {
+			return nil, err
+		}
+		return user, nil
+
+	} else {
+		return nil, errs.NewDefaultError("Invalid token")
+
+	}
+
 }
 
 func getToken(r *http.Request) (*jwt.Token, error) {

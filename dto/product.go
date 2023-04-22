@@ -4,8 +4,9 @@ import (
 	"pos.com/app/errs"
 )
 
-type ProductResponse struct {
+type Product struct {
 	Id          uint    `json:"id"`
+	Uuid        string  `json:"uuid"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Barcode     string  `json:"barcode"`
@@ -17,6 +18,7 @@ type ProductRequest struct {
 	Description string  `json:"description"`
 	Barcode     string  `json:"barcode"`
 	Price       float64 `json:"price"`
+	Category    uint    `json:"category"`
 }
 
 func (p ProductRequest) Validate() *errs.AppError {

@@ -4,6 +4,7 @@ import (
 	"html"
 	"strings"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"pos.com/app/db"
@@ -14,11 +15,11 @@ import (
 type User struct {
 	gorm.Model
 	Id       uint   `gorm:"primaryKey;autoIncrement" db:"id"`
-	Uuid     string `db:"uuid"`
-	Email    string `db:"email"`
-	Username string `db:"username"`
-	Password string `db:"password"`
-	Role     string `db:"role"`
+	Uuid     string `gorm:"unique;not null;type:varchar(100);default:null" db:"uuid"`
+	Email    string `gorm:"unique;not null;type:varchar(50);default:null" db:"email"`
+	Username string `gorm:"unique;not null;type:varchar(50);default:null" db:"username"`
+	Password string `gorm:"not null;type:varchar(100);default:null" db:"password"`
+	Role     string `gorm:"not null;type:varchar(20);default:null" db:"role"`
 }
 
 func CreateUser(req dto.UserRequest) (*User, *errs.AppError) {
@@ -49,6 +50,17 @@ func FindUserByEmail(req dto.LoginRequest) (*User, *errs.AppError) {
 	return &user, nil
 }
 
+func FindUserById(id uint) (*User, *errs.AppError) {
+	var user User
+
+	err := db.Database.Where(&User{Id: id}).First(&user).Error
+
+	if err != nil {
+		return nil, errs.NewNotFoundError("User not found")
+	}
+	return &user, nil
+}
+
 func (user *User) ValidatePassword(password string) *errs.AppError {
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
@@ -66,6 +78,7 @@ func (user *User) BeforeSave(*gorm.DB) error {
 	}
 	user.Password = string(passwordHash)
 	user.Username = html.EscapeString(strings.TrimSpace(user.Username))
+	user.Uuid = uuid.NewString()
 	return nil
 }
 

@@ -1,25 +1,39 @@
 package dto
 
-type Order struct {
-	Id         uint    `gorm:"primaryKey;autoIncrement" db:"id"`
-	Uuid       string  `db:"uuid"`
-	Amount     float64 `db:"name"`
-	TotalItems int     `db:"price"`
-}
-
-type OrderResponse struct {
-	Id         uint    `json:"id"`
-	Uuid       string  `json:"uuid"`
-	Amount     float64 `json:"description"`
-	Barcode    string  `json:"barcode"`
-	TotalItems int     `json:"price"`
-}
+import "pos.com/app/errs"
 
 type OrderRequest struct {
-	Id          uint    `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Barcode     string  `json:"barcode"`
-	Price       float64 `json:"price"`
-	Products    []ProductResponse
+	Total      float64 `json:"total"`
+	TotalItems int     `json:"totalItems"`
+	Products   []OrderProductRequest
+}
+
+type OrderProductRequest struct {
+	IdProduct uint    `json:"idProduct"`
+	Quantity  int16   `json:"quantity"`
+	Price     float64 `json:"price"`
+}
+
+type OrderProduct struct {
+	ProductId uint    `json:"productId"`
+	OrderId   uint    `json:"orderId"`
+	Quantity  int16   `json:"quantity"`
+	Price     float64 `json:"price"`
+	Product   Product `json:"product" gorm:"foreignKey:Id;references:ProductId"`
+}
+
+type Order struct {
+	Id            uint           `json:"id"`
+	Total         float64        `json:"total"`
+	OrderProducts []OrderProduct `json:"order_products" gorm:"foreignKey:OrderId;references:Id"`
+}
+
+func (o OrderRequest) Validate() *errs.AppError {
+	if o.Total <= 0 {
+		return errs.NewValidationError("El total no puede ser menor o igual a cero")
+	}
+	if len(o.Products) == 0 {
+		return errs.NewValidationError("Productos no validos")
+	}
+	return nil
 }

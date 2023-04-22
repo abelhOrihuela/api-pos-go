@@ -85,7 +85,9 @@ func setup() {
 
 	db.Database.AutoMigrate(&domain.Product{})
 	db.Database.AutoMigrate(&domain.Order{})
+	db.Database.AutoMigrate(&domain.OrderProduct{})
 	db.Database.AutoMigrate(&domain.User{})
+	db.Database.AutoMigrate(&domain.Category{})
 
 	seedDatabase()
 }
@@ -94,12 +96,16 @@ func teardown() {
 	migrator := db.Database.Migrator()
 	migrator.DropTable(&domain.Product{})
 	migrator.DropTable(&domain.Order{})
+	migrator.DropTable(&domain.OrderProduct{})
 	migrator.DropTable(&domain.User{})
+	migrator.DropTable(&domain.Category{})
 }
 
 func seedDatabase() {
-	db.Database.Create(&domain.Product{Name: "New product", Barcode: "1001"})
-	db.Database.Create(&domain.Product{Name: "Old product", Barcode: "1002"})
+	db.Database.Create(&domain.Category{Name: "General", Description: "Genaral category for all products"})
+
+	db.Database.Create(&domain.Product{Name: "New product", Barcode: "1001", Description: "New product", Price: 50.50, Category: 1})
+	db.Database.Create(&domain.Product{Name: "Old product", Barcode: "1002", Description: "Old product", Price: 50.60, Category: 1})
 	db.Database.Create(&domain.User{Username: "testing", Email: "hola@robot.com", Password: "secret", Role: "admin"})
 
 }

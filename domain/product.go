@@ -1,6 +1,10 @@
 package domain
 
 import (
+	"net/http"
+
+	"github.com/google/uuid"
+	"github.com/morkid/paginate"
 	"gorm.io/gorm"
 	"pos.com/app/db"
 	"pos.com/app/dto"
@@ -10,11 +14,12 @@ import (
 type Product struct {
 	gorm.Model
 	Id          uint    `gorm:"primaryKey;autoIncrement" db:"id"`
-	Uuid        string  `db:"uuid"`
-	Name        string  `db:"name"`
-	Description string  `db:"description"`
-	Barcode     string  `db:"barcode"`
-	Price       float64 `db:"price"`
+	Uuid        string  `gorm:"unique;not null;type:varchar(100)" db:"uuid"`
+	Name        string  `gorm:"not null;type:varchar(100)" db:"name"`
+	Description string  `gorm:"not null;type:varchar(100)" db:"description"`
+	Barcode     string  `gorm:"unique;not null;type:varchar(100)" db:"barcode"`
+	Price       float64 `gorm:"not null;type:double" db:"price"`
+	Category    uint    `gorm:"not null;type:int" db:"category_id"`
 }
 
 func CreateProduct(req dto.ProductRequest) (*Product, *errs.AppError) {
@@ -30,6 +35,7 @@ func CreateProduct(req dto.ProductRequest) (*Product, *errs.AppError) {
 		Name:        req.Name,
 		Description: req.Description,
 		Price:       req.Price,
+		Category:    req.Category,
 	}
 	db.Database.Create(&p)
 
@@ -37,11 +43,13 @@ func CreateProduct(req dto.ProductRequest) (*Product, *errs.AppError) {
 
 }
 
-func GetAll() []Product {
-	c := make([]Product, 0)
-	db.Database.Find(&c)
+func GetAllProducts(req *http.Request) paginate.Page {
+	model := db.Database.Where("price IS NOT NULL").Model(&Product{})
+	pg := paginate.New()
 
-	return c
+	page := pg.With(model).Request(req).Response(&[]dto.Product{})
+
+	return page
 }
 
 func Search(query string) []Product {
@@ -51,8 +59,14 @@ func Search(query string) []Product {
 	return p
 }
 
-func (p Product) ToDto() dto.ProductResponse {
-	return dto.ProductResponse{
+func (product *Product) BeforeSave(*gorm.DB) error {
+
+	product.Uuid = uuid.NewString()
+	return nil
+}
+
+func (p Product) ToDto() dto.Product {
+	return dto.Product{
 		Id:          p.Id,
 		Name:        p.Name,
 		Description: p.Description,
