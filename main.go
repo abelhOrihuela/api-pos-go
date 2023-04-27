@@ -24,8 +24,16 @@ func setupDatabase() {
 	db.Database.AutoMigrate(&domain.Order{})
 	db.Database.AutoMigrate(&domain.OrderProduct{})
 	db.Database.AutoMigrate(&domain.User{})
+	db.Database.AutoMigrate(&domain.Category{})
 
-	flagSeed := true
+	db.Database.Create(&domain.User{
+		Username: "admin@hola.com",
+		Email:    "admin@hola.com",
+		Password: "secret",
+		Role:     "admin",
+	})
+
+	flagSeed := false
 
 	if flagSeed {
 		fake := faker.New()
@@ -39,10 +47,10 @@ func setupDatabase() {
 
 		for i := 0; i < 10; i++ {
 			db.Database.Create(&domain.Product{
-				// Id:      uint(1),
-				Barcode: p.SSN(),
-				Price:   price,
-				Name:    p.FirstName(),
+				Barcode:    p.SSN(),
+				Price:      price,
+				Name:       p.FirstName(),
+				CategoryID: 1,
 			})
 
 		}

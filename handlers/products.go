@@ -35,7 +35,7 @@ func GetProducts(rw http.ResponseWriter, r *http.Request) {
 func Search(rw http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 
-	var response []dto.Product
+	var response []dto.SingleProduct
 	c := domain.Search(sanitize.Scripts(q))
 
 	for _, cs := range c {

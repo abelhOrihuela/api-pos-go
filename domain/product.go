@@ -13,38 +13,47 @@ import (
 
 type Product struct {
 	gorm.Model
-	Id          uint    `gorm:"primaryKey;autoIncrement" db:"id"`
-	Uuid        string  `gorm:"unique;not null;type:varchar(100)" db:"uuid"`
-	Name        string  `gorm:"not null;type:varchar(100)" db:"name"`
-	Description string  `gorm:"not null;type:varchar(100)" db:"description"`
-	Barcode     string  `gorm:"unique;not null;type:varchar(100)" db:"barcode"`
-	Price       float64 `gorm:"not null;type:double" db:"price"`
-	Category    uint    `gorm:"not null;type:int" db:"category_id"`
+	Id               int      `gorm:"primaryKey;autoIncrement" db:"id"`
+	Uuid             string   `gorm:"unique;not null;type:varchar(100);default:null" db:"uuid"`
+	Name             string   `gorm:"not null;type:varchar(100);default:null" db:"name"`
+	Description      string   `gorm:"not null;type:varchar(100);default:null" db:"description"`
+	Barcode          string   `gorm:"unique;not null;type:varchar(100);default:null" db:"barcode"`
+	Price            float64  `gorm:"not null;type:double;default:null" db:"price"`
+	CurrentExistence int64    `gorm:"not null;type:int;default:0" db:"current_existence"`
+	Unit             string   `gorm:"not null;type:string;default:null" db:"unit"`
+	CategoryID       int      `gorm:"not null;type:int;default:null" db:"category_id"`
+	Category         Category `gorm:"foreignKey:Id;references:CategoryID"`
 }
 
 func CreateProduct(req dto.ProductRequest) (*Product, *errs.AppError) {
 
-	err := req.Validate()
+	errValidation := req.Validate()
 
-	if err != nil {
-		return nil, err
+	if errValidation != nil {
+		return nil, errValidation
 	}
 
 	p := Product{
-		Barcode:     req.Barcode,
-		Name:        req.Name,
-		Description: req.Description,
-		Price:       req.Price,
-		Category:    req.Category,
+		Barcode:          req.Barcode,
+		Name:             req.Name,
+		Description:      req.Description,
+		Price:            req.Price,
+		CategoryID:       req.CategoryID,
+		Unit:             req.Unit,
+		CurrentExistence: req.CurrentExistence,
 	}
-	db.Database.Create(&p)
 
+	err := db.Database.Create(&p).Error
+
+	if err != nil {
+		return nil, errs.NewUnexpectedDatabaseError("Unexpected error during the creation of product" + err.Error())
+	}
 	return &p, nil
 
 }
 
 func GetAllProducts(req *http.Request) paginate.Page {
-	model := db.Database.Where("price IS NOT NULL").Model(&Product{})
+	model := db.Database.Where("deleted_at IS NULL").Preload("Category").Model(&Product{})
 	pg := paginate.New()
 
 	page := pg.With(model).Request(req).Response(&[]dto.Product{})
@@ -65,12 +74,13 @@ func (product *Product) BeforeSave(*gorm.DB) error {
 	return nil
 }
 
-func (p Product) ToDto() dto.Product {
-	return dto.Product{
+func (p Product) ToDto() dto.SingleProduct {
+	return dto.SingleProduct{
 		Id:          p.Id,
 		Name:        p.Name,
 		Description: p.Description,
 		Barcode:     p.Barcode,
 		Price:       p.Price,
+		CategoryID:  p.CategoryID,
 	}
 }

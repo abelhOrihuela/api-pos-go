@@ -13,30 +13,29 @@ import (
 
 type Order struct {
 	gorm.Model
-	Id            uint           `gorm:"primaryKey;autoIncrement" db:"id"`
-	Uuid          string         `gorm:"unique;not null;type:varchar(100)" db:"uuid"`
-	TotalItems    int            `gorm:"not null;type:int" db:"total_items"`
-	Total         float64        `gorm:"not null;type:double" db:"total"`
+	Id            int            `gorm:"primaryKey;autoIncrement" db:"id"`
+	Uuid          string         `gorm:"unique;not null;type:varchar(100);default:null" db:"uuid"`
+	TotalItems    int            `gorm:"not null;type:int;default:null" db:"total_items"`
+	Total         float64        `gorm:"not null;type:double;default:null" db:"total"`
 	OrderProducts []OrderProduct `gorm:"foreignKey:OrderId;references:Id"`
 }
 
 type OrderProduct struct {
 	gorm.Model
-	Id        uint    `gorm:"primaryKey;autoIncrement" db:"id"`
+	Id        int     `gorm:"primaryKey;autoIncrement" db:"id"`
 	Uuid      string  `gorm:"unique;not null;type:varchar(100)" db:"uuid"`
-	OrderId   string  `gorm:"not null;type:int" db:"order_id"`
-	Total     float64 `gorm:"not null;type:double" db:"total"`
-	Quantity  int16   `gorm:"not null;type:int" db:"quantity"`
-	ProductId uint    `gorm:"not null;type:int" db:"product_id"`
-	Product   Product `gorm:"foreignKey:Id;references:ProductId"`
+	OrderId   string  `gorm:"not null;type:int;default:null" db:"order_id"`
+	Total     float64 `gorm:"not null;type:double;default:null" db:"total"`
+	Quantity  int16   `gorm:"not null;type:int;default:null" db:"quantity"`
+	ProductId int     `gorm:"not null;type:int;default:null" db:"product_id"`
 }
 
 func CreateOrder(req dto.OrderRequest) (*Order, *errs.AppError) {
 
-	err := req.Validate()
+	errValidation := req.Validate()
 
-	if err != nil {
-		return nil, err
+	if errValidation != nil {
+		return nil, errValidation
 	}
 
 	var products []OrderProduct
@@ -64,8 +63,11 @@ func CreateOrder(req dto.OrderRequest) (*Order, *errs.AppError) {
 		OrderProducts: products,
 	}
 
-	db.Database.Create(&p)
+	err := db.Database.Create(&p).Error
 
+	if err != nil {
+		return nil, errs.NewUnexpectedDatabaseError("Unexpected error during the creation of order" + err.Error())
+	}
 	return &p, nil
 
 }

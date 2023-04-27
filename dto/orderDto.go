@@ -9,21 +9,21 @@ type OrderRequest struct {
 }
 
 type OrderProductRequest struct {
-	IdProduct uint    `json:"idProduct"`
+	IdProduct int     `json:"idProduct"`
 	Quantity  int16   `json:"quantity"`
 	Price     float64 `json:"price"`
 }
 
 type OrderProduct struct {
-	ProductId uint    `json:"productId"`
-	OrderId   uint    `json:"orderId"`
+	ProductId int     `json:"productId"`
+	OrderId   int     `json:"orderId"`
 	Quantity  int16   `json:"quantity"`
 	Price     float64 `json:"price"`
 	Product   Product `json:"product" gorm:"foreignKey:Id;references:ProductId"`
 }
 
 type Order struct {
-	Id            uint           `json:"id"`
+	Id            int            `json:"id"`
 	Total         float64        `json:"total"`
 	OrderProducts []OrderProduct `json:"order_products" gorm:"foreignKey:OrderId;references:Id"`
 }

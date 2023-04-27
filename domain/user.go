@@ -14,7 +14,7 @@ import (
 
 type User struct {
 	gorm.Model
-	Id       uint   `gorm:"primaryKey;autoIncrement" db:"id"`
+	Id       int    `gorm:"primaryKey;autoIncrement" db:"id"`
 	Uuid     string `gorm:"unique;not null;type:varchar(100);default:null" db:"uuid"`
 	Email    string `gorm:"unique;not null;type:varchar(50);default:null" db:"email"`
 	Username string `gorm:"unique;not null;type:varchar(50);default:null" db:"username"`
@@ -50,7 +50,7 @@ func FindUserByEmail(req dto.LoginRequest) (*User, *errs.AppError) {
 	return &user, nil
 }
 
-func FindUserById(id uint) (*User, *errs.AppError) {
+func FindUserById(id int) (*User, *errs.AppError) {
 	var user User
 
 	err := db.Database.Where(&User{Id: id}).First(&user).Error

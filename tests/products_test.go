@@ -14,11 +14,13 @@ import (
 
 func TestCreateProducts(t *testing.T) {
 	product := dto.ProductRequest{
-		Name:        "Coca cola",
-		Price:       50.55,
-		Barcode:     "1003",
-		Description: "coca cola 600ml",
-		Category:    1,
+		Name:             "Coca cola",
+		Price:            50.55,
+		Barcode:          "10003",
+		Description:      "coca cola 800ml",
+		CategoryID:       1,
+		Unit:             "PZA",
+		CurrentExistence: 10,
 	}
 
 	// request api/7
@@ -31,7 +33,9 @@ func TestCreateProducts(t *testing.T) {
 	assert.Equal(t, http.StatusOK, writer.Code)
 	assert.Equal(t, "Coca cola", response.Name)
 	assert.Equal(t, 50.55, response.Price)
-	assert.Equal(t, "1003", response.Barcode)
+	assert.Equal(t, "10003", response.Barcode)
+	assert.NotNil(t, response.Id)
+	assert.Equal(t, 1, response.CategoryID)
 }
 
 func TestGetAllProducts(t *testing.T) {

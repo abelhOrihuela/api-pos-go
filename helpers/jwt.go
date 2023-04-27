@@ -68,7 +68,7 @@ func CurrentUser(rw http.ResponseWriter, r *http.Request) (*domain.User, *errs.A
 	if ValidateJWT(rw, r) {
 		token, _ := getToken(r)
 		claims, _ := token.Claims.(jwt.MapClaims)
-		userId := uint(claims["id"].(float64))
+		userId := int(claims["id"].(float64))
 
 		user, err := domain.FindUserById(userId)
 		if err != nil {
