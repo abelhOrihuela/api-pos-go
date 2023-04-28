@@ -3,6 +3,7 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -10,6 +11,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/jaswdr/faker"
+	"pos.com/app/db"
 	"pos.com/app/domain"
 	"pos.com/app/errs"
 )
@@ -110,4 +113,55 @@ func writeResponse(rw http.ResponseWriter, statusCode int, data interface{}) {
 	if err := json.NewEncoder(rw).Encode(data); err != nil {
 		panic(err)
 	}
+}
+
+func TenantMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		domain := strings.Split(r.Host, ":")[0]
+		subdomain := strings.Split(domain, ".")[0]
+		fmt.Print(subdomain)
+		SetupDatabase(subdomain + ".db")
+		next.ServeHTTP(rw, r)
+
+	})
+}
+
+func SetupDatabase(database string) {
+	db.Connect(database)
+	db.Database.AutoMigrate(&domain.Product{})
+	db.Database.AutoMigrate(&domain.Order{})
+	db.Database.AutoMigrate(&domain.OrderProduct{})
+	db.Database.AutoMigrate(&domain.User{})
+	db.Database.AutoMigrate(&domain.Category{})
+
+	db.Database.Create(&domain.User{
+		Username: "admin@hola.com",
+		Email:    "admin@hola.com",
+		Password: "secret",
+		Role:     "admin",
+	})
+
+	flagSeed := false
+
+	if flagSeed {
+		fake := faker.New()
+		p := fake.Person()
+
+		//migrator := db.Database.Migrator()
+		//migrator.DropTable(&domain.Product{})
+
+		x := 128.3456
+		price := math.Floor(x*100) / 100
+
+		for i := 0; i < 10; i++ {
+			db.Database.Create(&domain.Product{
+				Barcode:    p.SSN(),
+				Price:      price,
+				Name:       p.FirstName(),
+				CategoryID: 1,
+			})
+
+		}
+	}
+
 }

@@ -41,6 +41,7 @@ func (s *Server) Start() error {
 func Router() *mux.Router {
 
 	r := mux.NewRouter()
+	r.Use(helpers.TenantMiddleware)
 	api := r.PathPrefix("/api").Subrouter()
 	publicRoutes(api)
 	addSignHandler(api)
