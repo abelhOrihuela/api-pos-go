@@ -18,10 +18,10 @@ type Category struct {
 
 func (c CategoryRequest) Validate() *errs.AppError {
 	if c.Name == "" {
-		return errs.NewValidationError("El campo nombre es requerido")
+		return errs.NewValidationError("¡El campo nombre es requerido!")
 	}
 	if c.Description == "" {
-		return errs.NewValidationError("El campo descripción es requerido")
+		return errs.NewValidationError("¡El campo descripción es requerido!")
 	}
 	return nil
 }

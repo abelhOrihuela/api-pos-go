@@ -6,16 +6,18 @@ import (
 
 // product response with relationships
 type Product struct {
-	Id          int      `json:"id"`
-	Uuid        string   `json:"uuid"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Barcode     string   `json:"barcode"`
-	Price       float64  `json:"price"`
-	CategoryID  int      `json:"category_id"`
-	Category    Category `json:"category" gorm:"foreignKey:Id;references:CategoryID"`
-	CreatedAt   string   `json:"created_at"`
-	UpdatedAt   string   `json:"updated_at"`
+	Id               int      `json:"id"`
+	Uuid             string   `json:"uuid"`
+	Name             string   `json:"name"`
+	Description      string   `json:"description"`
+	Barcode          string   `json:"barcode"`
+	Price            float64  `json:"price"`
+	CategoryID       int      `json:"category_id"`
+	Category         Category `json:"category" gorm:"foreignKey:Id;references:CategoryID"`
+	Unit             string   `json:"unit"`
+	CurrentExistence int64    `json:"current_existence"`
+	CreatedAt        string   `json:"created_at"`
+	UpdatedAt        string   `json:"updated_at"`
 }
 
 // product response
@@ -44,11 +46,24 @@ type ProductRequest struct {
 
 // Validator of ProductRequest
 func (p ProductRequest) Validate() *errs.AppError {
-	if p.Price <= 0 {
-		return errs.NewValidationError("El precio de un producto noe puede ser menor o igual a cero")
+	if p.Barcode == "" {
+		return errs.NewValidationError("¡El campo código de barras es requerido!")
 	}
 	if p.Name == "" {
-		return errs.NewValidationError("El nombre del producto es requerido")
+		return errs.NewValidationError("¡El campo nombre es requerido!")
 	}
+	if p.Description == "" {
+		return errs.NewValidationError("¡El campo descripción es requerido!")
+	}
+	if p.Unit == "" {
+		return errs.NewValidationError("¡El campo unidad es requerido!")
+	}
+	if p.CategoryID <= 0 {
+		return errs.NewValidationError("¡El campo categoria es requerido!")
+	}
+	if p.Price <= 0 {
+		return errs.NewValidationError("El precio de un producto no puede ser menor o igual a cero")
+	}
+
 	return nil
 }
