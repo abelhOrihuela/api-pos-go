@@ -2,9 +2,11 @@ package domain
 
 import (
 	"html"
+	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/morkid/paginate"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"pos.com/app/db"
@@ -39,10 +41,33 @@ func CreateUser(req dto.UserRequest) (*User, *errs.AppError) {
 	return &u, nil
 }
 
-func FindUserByEmail(req dto.LoginRequest) (*User, *errs.AppError) {
+func UpdateUser(req dto.UserRequestUpdate, uuid string) (*User, *errs.AppError) {
 	var user User
 
-	err := db.Database.Where(&User{Email: req.Email}).First(&user).Error
+	err := db.Database.Where("uuid =?", uuid).First(&user).Error
+
+	if err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+
+	if req.Username != "" {
+		user.Username = req.Username
+	}
+
+	if req.Role != "" {
+		user.Role = req.Role
+	}
+
+	db.Database.Save(&user)
+
+	return &user, nil
+
+}
+
+func FindUserByEmail(email string) (*User, *errs.AppError) {
+	var user User
+
+	err := db.Database.Where(&User{Email: email}).First(&user).Error
 
 	if err != nil {
 		return nil, errs.NewNotFoundError("User not found")
@@ -61,6 +86,26 @@ func FindUserById(id int) (*User, *errs.AppError) {
 	return &user, nil
 }
 
+func FindUserByUuid(uuid string) (*User, *errs.AppError) {
+	var user User
+
+	err := db.Database.Where(&User{Uuid: uuid}).First(&user).Error
+
+	if err != nil {
+		return nil, errs.NewNotFoundError("User not found")
+	}
+	return &user, nil
+}
+
+func GetAllUsers(req *http.Request) paginate.Page {
+	model := db.Database.Where("deleted_at IS NULL").Model(&User{})
+	pg := paginate.New()
+
+	page := pg.With(model).Request(req).Response(&[]dto.UserResponse{})
+
+	return page
+}
+
 func (user *User) ValidatePassword(password string) *errs.AppError {
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
@@ -71,7 +116,7 @@ func (user *User) ValidatePassword(password string) *errs.AppError {
 	return nil
 }
 
-func (user *User) BeforeSave(*gorm.DB) error {
+func (user *User) BeforeCreate(*gorm.DB) error {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -84,6 +129,7 @@ func (user *User) BeforeSave(*gorm.DB) error {
 
 func (u User) ToDto() dto.UserResponse {
 	return dto.UserResponse{
+		Uuid:     u.Uuid,
 		Username: u.Username,
 		Email:    u.Email,
 		Role:     u.Role,

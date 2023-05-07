@@ -18,7 +18,7 @@ type Product struct {
 	Name             string   `gorm:"not null;type:varchar(100);default:null" db:"name"`
 	Description      string   `gorm:"not null;type:varchar(100);default:null" db:"description"`
 	Barcode          string   `gorm:"unique;not null;type:varchar(100);default:null" db:"barcode"`
-	Price            float64  `gorm:"not null;type:double;default:null" db:"price"`
+	Price            float64  `gorm:"not null;type:double precision;default:null" db:"price"`
 	CurrentExistence int64    `gorm:"not null;type:int;default:0" db:"current_existence"`
 	Unit             string   `gorm:"not null;type:string;default:null" db:"unit"`
 	CategoryID       int      `gorm:"not null;type:int;default:null" db:"category_id"`
@@ -68,7 +68,7 @@ func Search(query string) []Product {
 	return p
 }
 
-func (product *Product) BeforeSave(*gorm.DB) error {
+func (product *Product) BeforeCreate(*gorm.DB) error {
 
 	product.Uuid = uuid.NewString()
 	return nil

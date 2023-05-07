@@ -50,7 +50,7 @@ func GetAllCategories(req *http.Request) paginate.Page {
 	return page
 }
 
-func (category *Category) BeforeSave(*gorm.DB) error {
+func (category *Category) BeforeCreate(*gorm.DB) error {
 	category.Uuid = uuid.NewString()
 	return nil
 }

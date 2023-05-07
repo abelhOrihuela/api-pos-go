@@ -21,7 +21,7 @@ func Login(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := domain.FindUserByEmail(request)
+	u, err := domain.FindUserByEmail(request.Email)
 	if err != nil {
 		WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
 		return

@@ -79,4 +79,8 @@ func addSignHandler(r *mux.Router) {
 
 	// Users endpoints
 	s.HandleFunc("/users", handlers.CreateUser).Methods(http.MethodPost)
+	s.HandleFunc("/users", handlers.GetAllUsers).Methods(http.MethodGet)
+	s.HandleFunc("/users/{user_uuid}", handlers.UpdateUser).Methods(http.MethodPut)
+	s.HandleFunc("/users/{user_uuid}", handlers.GetUser).Methods(http.MethodGet)
+
 }

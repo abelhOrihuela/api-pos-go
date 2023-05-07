@@ -16,7 +16,7 @@ type Order struct {
 	Id            int            `gorm:"primaryKey;autoIncrement" db:"id"`
 	Uuid          string         `gorm:"unique;not null;type:varchar(100);default:null" db:"uuid"`
 	TotalItems    int            `gorm:"not null;type:int;default:null" db:"total_items"`
-	Total         float64        `gorm:"not null;type:double;default:null" db:"total"`
+	Total         float64        `gorm:"not null;type:double precision;default:null" db:"total"`
 	OrderProducts []OrderProduct `gorm:"foreignKey:OrderId;references:Id"`
 }
 
@@ -25,7 +25,7 @@ type OrderProduct struct {
 	Id        int     `gorm:"primaryKey;autoIncrement" db:"id"`
 	Uuid      string  `gorm:"unique;not null;type:varchar(100)" db:"uuid"`
 	OrderId   string  `gorm:"not null;type:int;default:null" db:"order_id"`
-	Total     float64 `gorm:"not null;type:double;default:null" db:"total"`
+	Total     float64 `gorm:"not null;type:double precision;default:null" db:"total"`
 	Quantity  int16   `gorm:"not null;type:int;default:null" db:"quantity"`
 	ProductId int     `gorm:"not null;type:int;default:null" db:"product_id"`
 }
@@ -82,7 +82,7 @@ func GetAllOrders(req *http.Request) paginate.Page {
 	return page
 }
 
-func (order *Order) BeforeSave(*gorm.DB) error {
+func (order *Order) BeforeCreate(*gorm.DB) error {
 
 	order.Uuid = uuid.NewString()
 	return nil

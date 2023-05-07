@@ -9,7 +9,13 @@ type UserRequest struct {
 	Role     string `json:"role"`
 }
 
+type UserRequestUpdate struct {
+	Username string `json:"username"`
+	Role     string `json:"role"`
+}
+
 type UserResponse struct {
+	Uuid     string `json:"uuid"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Role     string `json:"role"`
