@@ -48,7 +48,7 @@ func Me(rw http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
-	} else {
-		WriteResponse(rw, http.StatusOK, u.ToDto())
+		return
 	}
+	WriteResponse(rw, http.StatusOK, u.ToDto())
 }

@@ -26,6 +26,9 @@ type Order struct {
 	Id            int            `json:"id"`
 	Total         float64        `json:"total"`
 	OrderProducts []OrderProduct `json:"order_products" gorm:"foreignKey:OrderId;references:Id"`
+	CreatedAt     string         `json:"created_at"`
+	UpdatedAt     string         `json:"updated_at"`
+	DeletedAt     string         `json:"deleted_at"`
 }
 
 func (o OrderRequest) Validate() *errs.AppError {

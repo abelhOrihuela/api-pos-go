@@ -14,7 +14,7 @@ import (
 func TestCreateUser(t *testing.T) {
 	user := dto.UserRequest{
 		Username: "Jonh Doe",
-		Email:    "jonh@hello.com",
+		Email:    "fake@hello.com",
 		Password: "secret",
 		Role:     "cashier",
 	}
@@ -28,12 +28,13 @@ func TestCreateUser(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, writer.Code)
 	assert.Equal(t, "Jonh Doe", response.Username)
-	assert.Equal(t, "jonh@hello.com", response.Email)
+	assert.Equal(t, "fake@hello.com", response.Email)
 	assert.Equal(t, "cashier", response.Role)
+	assert.Empty(t, response.DeletedAt)
 }
 
 func TestGetUser(t *testing.T) {
-	user, err := domain.FindUserByEmail("jonh@hello.com")
+	user, err := domain.FindUserByEmail("fake@hello.com")
 
 	// request api
 	if err != nil {
@@ -47,13 +48,12 @@ func TestGetUser(t *testing.T) {
 
 	assert.NotEmpty(t, response)
 	assert.Equal(t, http.StatusOK, writer.Code)
-	assert.Equal(t, "jonh@hello.com", response.Email)
-
+	assert.Equal(t, "fake@hello.com", response.Email)
 }
 
 func TestUpdateUser(t *testing.T) {
 
-	u, err := domain.FindUserByEmail("jonh@hello.com")
+	u, err := domain.FindUserByEmail("fake@hello.com")
 
 	// request api
 	if err != nil {
@@ -72,35 +72,26 @@ func TestUpdateUser(t *testing.T) {
 
 	assert.NotEmpty(t, response)
 	assert.Equal(t, http.StatusOK, writer.Code)
-	assert.Equal(t, "jonh@hello.com", response.Email)
-
+	assert.Equal(t, "fake@hello.com", response.Email)
 }
 
-func TestLogin(t *testing.T) {
+func TestDeleteUser(t *testing.T) {
 
-	user := dto.LoginRequest{
-		Email:    "jonh@hello.com",
-		Password: "secret",
+	u, err := domain.FindUserByEmail("fake@hello.com")
+
+	// request api
+	if err != nil {
+		assert.Fail(t, "User not found")
 	}
-	writer := makeRequest("POST", "/api/public/login", user, false)
 
-	var response dto.TokenResponse
-	json.Unmarshal(writer.Body.Bytes(), &response)
-
-	assert.NotEmpty(t, response.AccessToken)
-	assert.Equal(t, http.StatusOK, writer.Code)
-
-}
-
-func TestMe(t *testing.T) {
-	writer := makeRequest("GET", "/api/pos/me", nil, true)
+	writer := makeRequest("DELETE", "/api/pos/users/"+u.Uuid, nil, true)
 
 	var response dto.UserResponse
 	json.Unmarshal(writer.Body.Bytes(), &response)
 
 	assert.NotEmpty(t, response)
 	assert.Equal(t, http.StatusOK, writer.Code)
-	assert.Equal(t, "hola@robot.com", response.Email)
+	assert.NotEmpty(t, response.DeletedAt)
 }
 
 func TestGetAllUsers(t *testing.T) {

@@ -52,6 +52,63 @@ func CreateProduct(req dto.ProductRequest) (*Product, *errs.AppError) {
 
 }
 
+func UpdateProduct(uuid string, req dto.ProductRequest) (*Product, *errs.AppError) {
+	var product Product
+	err := db.Database.First(&product, "uuid = ?", uuid).Error
+	if err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+
+	if req.Name != "" {
+		product.Name = req.Name
+	}
+	if req.Description != "" {
+		product.Description = req.Description
+	}
+	if req.Barcode != "" {
+		product.Barcode = req.Barcode
+	}
+	if req.Price > 0 {
+		product.Price = req.Price
+	}
+	if req.CategoryID > 0 {
+		product.CategoryID = req.CategoryID
+	}
+	if req.Unit != "" {
+		product.Unit = req.Unit
+	}
+	if req.CurrentExistence >= 0 {
+		product.CurrentExistence = req.CurrentExistence
+	}
+
+	if err := db.Database.Save(&product).Error; err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+
+	return &product, nil
+}
+
+func FindProductByUuid(uuid string) (*Product, *errs.AppError) {
+	var product Product
+	err := db.Database.Where(&Product{Uuid: uuid}).First(&product).Error
+
+	if err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+	return &product, nil
+}
+
+func DeleteProduct(uuid string) (*Product, *errs.AppError) {
+	var product Product
+
+	err := db.Database.Where("uuid = ?", uuid).Delete(&product).Error
+	if err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+
+	return &product, nil
+}
+
 func GetAllProducts(req *http.Request) paginate.Page {
 	model := db.Database.Where("deleted_at IS NULL").Preload("Category").Model(&Product{})
 	pg := paginate.New()
@@ -75,12 +132,24 @@ func (product *Product) BeforeCreate(*gorm.DB) error {
 }
 
 func (p Product) ToDto() dto.SingleProduct {
+
+	deletedAt := ""
+
+	if p.DeletedAt.Valid {
+		deletedAt = p.DeletedAt.Time.String()
+	}
+
 	return dto.SingleProduct{
-		Id:          p.Id,
-		Name:        p.Name,
-		Description: p.Description,
-		Barcode:     p.Barcode,
-		Price:       p.Price,
-		CategoryID:  p.CategoryID,
+		Uuid:             p.Uuid,
+		Id:               p.Id,
+		Name:             p.Name,
+		Description:      p.Description,
+		Barcode:          p.Barcode,
+		Price:            p.Price,
+		CategoryID:       p.CategoryID,
+		CurrentExistence: p.CurrentExistence,
+		CreatedAt:        p.CreatedAt.String(),
+		UpdatedAt:        p.UpdatedAt.String(),
+		DeletedAt:        deletedAt,
 	}
 }

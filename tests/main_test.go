@@ -102,7 +102,8 @@ func teardown() {
 }
 
 func seedDatabase() {
-	db.Database.Create(&domain.User{Username: "testing", Email: "hola@robot.com", Password: "secret", Role: "admin"})
+	db.Database.Create(&domain.User{Username: "superuser", Email: "jonh@hello.com", Password: "secret", Role: "admin"})
+	db.Database.Create(&domain.User{Username: "testing", Email: "hola@robot.com", Password: "secret", Role: "cashier"})
 	db.Database.Create(&domain.Category{Name: "General", Description: "Genaral category for all products"})
 	db.Database.Create(&domain.Product{Name: "New product", Barcode: "1001", Description: "New product", Price: 50.50, CategoryID: 1, Unit: "PZA"})
 	db.Database.Create(&domain.Product{Name: "Old product", Barcode: "1002", Description: "Old product", Price: 50.60, CategoryID: 1, Unit: "CJA"})

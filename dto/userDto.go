@@ -15,10 +15,13 @@ type UserRequestUpdate struct {
 }
 
 type UserResponse struct {
-	Uuid     string `json:"uuid"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
+	Uuid      string `json:"uuid"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Role      string `json:"role"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	DeletedAt string `json:"deleted_at"`
 }
 
 type LoginRequest struct {

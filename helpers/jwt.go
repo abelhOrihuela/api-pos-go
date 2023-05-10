@@ -20,7 +20,7 @@ func GenerateJWT(user *domain.User) (string, *errs.AppError) {
 	tokenTTL, _ := strconv.Atoi(os.Getenv("TOKEN_TTL"))
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  user.ID,
+		"id":  user.Id,
 		"iat": time.Now().Unix(),
 		"eat": time.Now().Add(time.Second * time.Duration(tokenTTL)).Unix(),
 	})

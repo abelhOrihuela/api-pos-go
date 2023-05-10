@@ -18,19 +18,22 @@ type Product struct {
 	CurrentExistence int64    `json:"current_existence"`
 	CreatedAt        string   `json:"created_at"`
 	UpdatedAt        string   `json:"updated_at"`
+	DeletedAt        string   `json:"deleted_at"`
 }
 
 // product response
 type SingleProduct struct {
-	Id          int     `json:"id"`
-	Uuid        string  `json:"uuid"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Barcode     string  `json:"barcode"`
-	Price       float64 `json:"price"`
-	CategoryID  int     `json:"category_id"`
-	CreatedAt   string  `json:"created_at"`
-	UpdatedAt   string  `json:"updated_at"`
+	Id               int     `json:"id"`
+	Uuid             string  `json:"uuid"`
+	Name             string  `json:"name"`
+	Description      string  `json:"description"`
+	Barcode          string  `json:"barcode"`
+	Price            float64 `json:"price"`
+	CurrentExistence int64   `json:"current_existence"`
+	CategoryID       int     `json:"category_id"`
+	CreatedAt        string  `json:"created_at"`
+	UpdatedAt        string  `json:"updated_at"`
+	DeletedAt        string  `json:"deleted_at"`
 }
 
 // ProductRequest to create a product

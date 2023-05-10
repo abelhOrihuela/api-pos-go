@@ -34,18 +34,16 @@ func CreateUser(req dto.UserRequest) (*User, *errs.AppError) {
 	}
 
 	err := db.Database.Create(&u).Error
-
 	if err != nil {
 		return nil, errs.NewUnexpectedDatabaseError("Unexpected error during the creation of user" + err.Error())
 	}
 	return &u, nil
 }
 
-func UpdateUser(req dto.UserRequestUpdate, uuid string) (*User, *errs.AppError) {
+func UpdateUser(uuid string, req dto.UserRequestUpdate) (*User, *errs.AppError) {
 	var user User
 
-	err := db.Database.Where("uuid =?", uuid).First(&user).Error
-
+	err := db.Database.Where("uuid = ?", uuid).First(&user).Error
 	if err != nil {
 		return nil, errs.NewDefaultError(err.Error())
 	}
@@ -58,20 +56,31 @@ func UpdateUser(req dto.UserRequestUpdate, uuid string) (*User, *errs.AppError) 
 		user.Role = req.Role
 	}
 
-	db.Database.Save(&user)
+	if err := db.Database.Save(&user).Error; err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+	return &user, nil
+}
+
+func DeleteUser(uuid string) (*User, *errs.AppError) {
+	var user User
+
+	err := db.Database.Where("uuid = ?", uuid).Delete(&user).Error
+	if err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
 
 	return &user, nil
-
 }
 
 func FindUserByEmail(email string) (*User, *errs.AppError) {
 	var user User
 
 	err := db.Database.Where(&User{Email: email}).First(&user).Error
-
 	if err != nil {
 		return nil, errs.NewNotFoundError("User not found")
 	}
+
 	return &user, nil
 }
 
@@ -79,10 +88,10 @@ func FindUserById(id int) (*User, *errs.AppError) {
 	var user User
 
 	err := db.Database.Where(&User{Id: id}).First(&user).Error
-
 	if err != nil {
 		return nil, errs.NewNotFoundError("User not found")
 	}
+
 	return &user, nil
 }
 
@@ -90,7 +99,6 @@ func FindUserByUuid(uuid string) (*User, *errs.AppError) {
 	var user User
 
 	err := db.Database.Where(&User{Uuid: uuid}).First(&user).Error
-
 	if err != nil {
 		return nil, errs.NewNotFoundError("User not found")
 	}
@@ -109,7 +117,6 @@ func GetAllUsers(req *http.Request) paginate.Page {
 func (user *User) ValidatePassword(password string) *errs.AppError {
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-
 	if err != nil {
 		return errs.NewValidationError("¡Password incorrecto.!")
 	}
@@ -128,10 +135,19 @@ func (user *User) BeforeCreate(*gorm.DB) error {
 }
 
 func (u User) ToDto() dto.UserResponse {
+	deletedAt := ""
+
+	if u.DeletedAt.Valid {
+		deletedAt = u.DeletedAt.Time.String()
+	}
+
 	return dto.UserResponse{
-		Uuid:     u.Uuid,
-		Username: u.Username,
-		Email:    u.Email,
-		Role:     u.Role,
+		Uuid:      u.Uuid,
+		Username:  u.Username,
+		Email:     u.Email,
+		Role:      u.Role,
+		CreatedAt: u.CreatedAt.String(),
+		UpdatedAt: u.UpdatedAt.String(),
+		DeletedAt: deletedAt,
 	}
 }

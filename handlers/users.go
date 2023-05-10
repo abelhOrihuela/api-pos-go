@@ -9,58 +9,82 @@ import (
 	"pos.com/app/dto"
 )
 
+/*
+* Create user
+ */
 func CreateUser(rw http.ResponseWriter, r *http.Request) {
 	var request dto.UserRequest
-	err := json.NewDecoder(r.Body).Decode(&request)
 
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		WriteResponse(rw, http.StatusBadRequest, err.Error())
-	} else {
-		u, err := domain.CreateUser(request)
-
-		if err != nil {
-			WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
-		} else {
-			WriteResponse(rw, http.StatusOK, u.ToDto())
-		}
+		return
 	}
-}
 
-func GetUser(rw http.ResponseWriter, r *http.Request) {
-	requestVars := mux.Vars(r)
-	userUuid := requestVars["user_uuid"]
-
-	u, err := domain.FindUserByUuid(userUuid)
+	u, err := domain.CreateUser(request)
 
 	if err != nil {
 		WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
-	} else {
-
-		WriteResponse(rw, http.StatusOK, u.ToDto())
-
+		return
 	}
+
+	WriteResponse(rw, http.StatusOK, u.ToDto())
 }
 
-func UpdateUser(rw http.ResponseWriter, r *http.Request) {
-
+/*
+* Get user
+ */
+func GetUser(rw http.ResponseWriter, r *http.Request) {
 	requestVars := mux.Vars(r)
-	userUuid := requestVars["user_uuid"]
-	var request dto.UserRequestUpdate
-	err := json.NewDecoder(r.Body).Decode(&request)
+	uuid := requestVars["user_uuid"]
+
+	u, err := domain.FindUserByUuid(uuid)
 
 	if err != nil {
-		WriteResponse(rw, http.StatusBadRequest, err.Error())
-	} else {
-		u, err := domain.UpdateUser(request, userUuid)
-
-		if err != nil {
-			WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
-		} else {
-			WriteResponse(rw, http.StatusOK, u.ToDto())
-		}
+		WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
+		return
 	}
+	WriteResponse(rw, http.StatusOK, u.ToDto())
 }
 
+/*
+* Update user
+ */
+func UpdateUser(rw http.ResponseWriter, r *http.Request) {
+	requestVars := mux.Vars(r)
+	uuid := requestVars["user_uuid"]
+	var request dto.UserRequestUpdate
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		WriteResponse(rw, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	u, err := domain.UpdateUser(uuid, request)
+	if err != nil {
+		WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
+		return
+	}
+
+	WriteResponse(rw, http.StatusOK, u.ToDto())
+}
+
+func DeleteUser(rw http.ResponseWriter, r *http.Request) {
+	requestVars := mux.Vars(r)
+	uuid := requestVars["user_uuid"]
+
+	u, err := domain.DeleteUser(uuid)
+
+	if err != nil {
+		WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
+		return
+	}
+
+	WriteResponse(rw, http.StatusOK, u.ToDto())
+}
+
+/*
+* Get all users
+ */
 func GetAllUsers(rw http.ResponseWriter, r *http.Request) {
 	response := domain.GetAllUsers(r)
 	WriteResponse(rw, http.StatusOK, response)
