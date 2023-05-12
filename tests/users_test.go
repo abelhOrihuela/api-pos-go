@@ -7,9 +7,10 @@ import (
 
 	"github.com/morkid/paginate"
 	"github.com/stretchr/testify/assert"
-	"pos.com/app/domain"
 	"pos.com/app/dto"
 )
+
+var userResponse dto.UserResponse
 
 func TestCreateUser(t *testing.T) {
 	user := dto.UserRequest{
@@ -23,25 +24,18 @@ func TestCreateUser(t *testing.T) {
 	writer := makeRequest("POST", "/api/pos/users", user, true)
 
 	// parse response
-	var response dto.UserResponse
-	json.Unmarshal(writer.Body.Bytes(), &response)
+	json.Unmarshal(writer.Body.Bytes(), &userResponse)
 
 	assert.Equal(t, http.StatusOK, writer.Code)
-	assert.Equal(t, "Jonh Doe", response.Username)
-	assert.Equal(t, "fake@hello.com", response.Email)
-	assert.Equal(t, "cashier", response.Role)
-	assert.Empty(t, response.DeletedAt)
+	assert.Equal(t, "Jonh Doe", userResponse.Username)
+	assert.Equal(t, "fake@hello.com", userResponse.Email)
+	assert.Equal(t, "cashier", userResponse.Role)
+	assert.Empty(t, userResponse.DeletedAt)
 }
 
 func TestGetUser(t *testing.T) {
-	user, err := domain.FindUserByEmail("fake@hello.com")
 
-	// request api
-	if err != nil {
-		assert.Fail(t, "User not found")
-	}
-
-	writer := makeRequest("GET", "/api/pos/users/"+user.Uuid, nil, true)
+	writer := makeRequest("GET", "/api/pos/users/"+userResponse.Uuid, nil, true)
 
 	var response dto.UserResponse
 	json.Unmarshal(writer.Body.Bytes(), &response)
@@ -53,19 +47,12 @@ func TestGetUser(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 
-	u, err := domain.FindUserByEmail("fake@hello.com")
-
-	// request api
-	if err != nil {
-		assert.Fail(t, "User not found")
-	}
-
 	user := dto.UserRequestUpdate{
 		Username: "Jonh Doe Jr",
 		Role:     "admin",
 	}
 
-	writer := makeRequest("PUT", "/api/pos/users/"+u.Uuid, user, true)
+	writer := makeRequest("PUT", "/api/pos/users/"+userResponse.Uuid, user, true)
 
 	var response dto.UserResponse
 	json.Unmarshal(writer.Body.Bytes(), &response)
@@ -77,14 +64,7 @@ func TestUpdateUser(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
 
-	u, err := domain.FindUserByEmail("fake@hello.com")
-
-	// request api
-	if err != nil {
-		assert.Fail(t, "User not found")
-	}
-
-	writer := makeRequest("DELETE", "/api/pos/users/"+u.Uuid, nil, true)
+	writer := makeRequest("DELETE", "/api/pos/users/"+userResponse.Uuid, nil, true)
 
 	var response dto.UserResponse
 	json.Unmarshal(writer.Body.Bytes(), &response)

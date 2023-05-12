@@ -9,10 +9,10 @@ import (
 
 	"github.com/morkid/paginate"
 	"github.com/stretchr/testify/assert"
-	"pos.com/app/db"
-	"pos.com/app/domain"
 	"pos.com/app/dto"
 )
+
+var productResponse dto.SingleProduct
 
 func TestCreateProducts(t *testing.T) {
 	product := dto.ProductRequest{
@@ -29,53 +29,19 @@ func TestCreateProducts(t *testing.T) {
 	writer := makeRequest("POST", "/api/pos/products", product, true)
 
 	// parse response
-	var response dto.Product
-	json.Unmarshal(writer.Body.Bytes(), &response)
+	json.Unmarshal(writer.Body.Bytes(), &productResponse)
 
 	assert.Equal(t, http.StatusOK, writer.Code)
-	assert.Equal(t, "Coca cola", response.Name)
-	assert.Equal(t, 50.55, response.Price)
-	assert.Equal(t, "10003", response.Barcode)
-	assert.NotNil(t, response.Id)
-	assert.Equal(t, 1, response.CategoryID)
-}
-
-func TestGetAllProducts(t *testing.T) {
-	writer := makeRequest("GET", "/api/pos/products", nil, true)
-
-	// parse response
-	var response paginate.Page
-	json.Unmarshal(writer.Body.Bytes(), &response)
-
-	// assertions
-	assert.Equal(t, http.StatusOK, writer.Code)
-	assert.NotEmpty(t, response.Items)
-	assert.Equal(t, 3, int(response.Total))
-
-}
-
-func TestSearchProducts(t *testing.T) {
-	writer := makeRequest("GET", "/api/pos/search?q=1001", nil, true)
-
-	// parse response
-	var response []dto.Product
-	json.Unmarshal(writer.Body.Bytes(), &response)
-
-	// assertions
-	assert.Equal(t, http.StatusOK, writer.Code)
-	assert.NotEmpty(t, response)
-	assert.Equal(t, 1, len(response))
+	assert.Equal(t, "Coca cola", productResponse.Name)
+	assert.Equal(t, 50.55, productResponse.Price)
+	assert.Equal(t, "10003", productResponse.Barcode)
+	assert.NotNil(t, productResponse.Id)
+	assert.Equal(t, 1, productResponse.CategoryID)
 }
 
 func TestGetProduct(t *testing.T) {
-	var product domain.Product
-	err := db.Database.Where("id = ?", 1).First(&product).Error
 
-	if err != nil {
-		assert.Fail(t, "Product not exist")
-	}
-
-	writer := makeRequest("GET", "/api/pos/products/"+product.Uuid, nil, true)
+	writer := makeRequest("GET", "/api/pos/products/"+productResponse.Uuid, nil, true)
 
 	// parse response
 	var response dto.SingleProduct
@@ -83,17 +49,10 @@ func TestGetProduct(t *testing.T) {
 
 	// assertions
 	assert.Equal(t, http.StatusOK, writer.Code)
-	assert.Equal(t, product.Uuid, response.Uuid)
+	assert.Equal(t, productResponse.Uuid, response.Uuid)
 }
 
 func TestUpdateProduct(t *testing.T) {
-	var product domain.Product
-	err := db.Database.Where("id = ?", 1).First(&product).Error
-
-	if err != nil {
-		assert.Fail(t, "Product not exist")
-	}
-
 	productRequest := dto.ProductRequest{
 		Name:             "Coca cola 600ml",
 		Price:            65.50,
@@ -104,7 +63,7 @@ func TestUpdateProduct(t *testing.T) {
 		CurrentExistence: 100,
 	}
 
-	writer := makeRequest("PUT", "/api/pos/products/"+product.Uuid, productRequest, true)
+	writer := makeRequest("PUT", "/api/pos/products/"+productResponse.Uuid, productRequest, true)
 
 	// parse response
 	var response dto.SingleProduct
@@ -121,14 +80,8 @@ func TestUpdateProduct(t *testing.T) {
 }
 
 func TestDeleteProduct(t *testing.T) {
-	var product domain.Product
-	err := db.Database.Where("id = ?", 1).First(&product).Error
 
-	if err != nil {
-		assert.Fail(t, "Product not exist")
-	}
-
-	writer := makeRequest("DELETE", "/api/pos/products/"+product.Uuid, nil, true)
+	writer := makeRequest("DELETE", "/api/pos/products/"+productResponse.Uuid, nil, true)
 
 	// parse response
 	var response dto.SingleProduct
@@ -138,4 +91,31 @@ func TestDeleteProduct(t *testing.T) {
 	assert.NotEmpty(t, response)
 	assert.Equal(t, http.StatusOK, writer.Code)
 	assert.NotEmpty(t, response.DeletedAt)
+}
+
+func TestGetAllProducts(t *testing.T) {
+	writer := makeRequest("GET", "/api/pos/products", nil, true)
+
+	// parse response
+	var response paginate.Page
+	json.Unmarshal(writer.Body.Bytes(), &response)
+
+	// assertions
+	assert.Equal(t, http.StatusOK, writer.Code)
+	assert.NotEmpty(t, response.Items)
+	assert.Equal(t, 2, int(response.Total))
+
+}
+
+func TestSearchProducts(t *testing.T) {
+	writer := makeRequest("GET", "/api/pos/search?q=1002", nil, true)
+
+	// parse response
+	var response []dto.Product
+	json.Unmarshal(writer.Body.Bytes(), &response)
+
+	// assertions
+	assert.Equal(t, http.StatusOK, writer.Code)
+	assert.NotEmpty(t, response)
+	assert.Equal(t, 1, len(response))
 }

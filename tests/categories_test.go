@@ -10,6 +10,8 @@ import (
 	"pos.com/app/dto"
 )
 
+var categoryResponse dto.Category
+
 func TestCreateCategory(t *testing.T) {
 	category := dto.CategoryRequest{
 		Name:        "Abarrotes",
@@ -20,16 +22,32 @@ func TestCreateCategory(t *testing.T) {
 	writer := makeRequest("POST", "/api/pos/categories", category, true)
 
 	// parse response
+	json.Unmarshal(writer.Body.Bytes(), &categoryResponse)
+
+	assert.Equal(t, http.StatusOK, writer.Code)
+	assert.Equal(t, "Abarrotes", categoryResponse.Name)
+	assert.Equal(t, "Abarrotes", categoryResponse.Description)
+	assert.NotNil(t, categoryResponse.Id)
+	assert.NotNil(t, categoryResponse.Uuid)
+}
+
+func TestUpdateCategory(t *testing.T) {
+	category := dto.CategoryRequest{
+		Name:        "Abarrotes y otros",
+		Description: "Abarrotes y otros",
+	}
+
+	writer := makeRequest("PUT", "/api/pos/categories/"+categoryResponse.Uuid, category, true)
+
 	var response dto.Category
 	json.Unmarshal(writer.Body.Bytes(), &response)
 
 	assert.Equal(t, http.StatusOK, writer.Code)
-	assert.Equal(t, "Abarrotes", response.Name)
-	assert.Equal(t, "Abarrotes", response.Description)
+	assert.Equal(t, "Abarrotes y otros", response.Name)
+	assert.Equal(t, "Abarrotes y otros", response.Description)
 	assert.NotNil(t, response.Id)
 	assert.NotNil(t, response.Uuid)
 }
-
 func TestGetAllCategories(t *testing.T) {
 
 	// request api/pos/categories

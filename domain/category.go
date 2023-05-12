@@ -41,6 +41,30 @@ func CreateCategory(req dto.CategoryRequest) (*Category, *errs.AppError) {
 
 }
 
+func UpdateCategory(req dto.CategoryRequest, uuid string) (*Category, *errs.AppError) {
+	var category Category
+
+	err := db.Database.Where("uuid = ?", uuid).First(&category).Error
+
+	if err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+
+	if req.Name != "" {
+		category.Name = req.Name
+	}
+
+	if req.Description != "" {
+		category.Description = req.Description
+	}
+
+	if err := db.Database.Save(&category).Error; err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+
+	return &category, nil
+}
+
 func GetAllCategories(req *http.Request) paginate.Page {
 	model := db.Database.Where("deleted_at IS NULL").Model(&Category{})
 	pg := paginate.New()

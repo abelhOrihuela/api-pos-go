@@ -68,6 +68,9 @@ func UpdateUser(rw http.ResponseWriter, r *http.Request) {
 	WriteResponse(rw, http.StatusOK, u.ToDto())
 }
 
+/*
+* Delete user
+ */
 func DeleteUser(rw http.ResponseWriter, r *http.Request) {
 	requestVars := mux.Vars(r)
 	uuid := requestVars["user_uuid"]

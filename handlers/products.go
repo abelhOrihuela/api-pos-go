@@ -10,6 +10,9 @@ import (
 	"pos.com/app/dto"
 )
 
+/*
+* Create product
+ */
 func CreateProduct(rw http.ResponseWriter, r *http.Request) {
 	var request dto.ProductRequest
 
@@ -28,6 +31,9 @@ func CreateProduct(rw http.ResponseWriter, r *http.Request) {
 	WriteResponse(rw, http.StatusOK, p.ToDto())
 }
 
+/*
+* Get product
+ */
 func GetProduct(rw http.ResponseWriter, r *http.Request) {
 	requestVars := mux.Vars(r)
 	uuid := requestVars["product_uuid"]
@@ -42,6 +48,9 @@ func GetProduct(rw http.ResponseWriter, r *http.Request) {
 	WriteResponse(rw, http.StatusOK, p.ToDto())
 }
 
+/*
+* Update product
+ */
 func UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 	requestVars := mux.Vars(r)
 	uuid := requestVars["product_uuid"]
@@ -60,6 +69,9 @@ func UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 	WriteResponse(rw, http.StatusOK, u.ToDto())
 }
 
+/*
+* Delete product
+ */
 func DeleteProduct(rw http.ResponseWriter, r *http.Request) {
 	requestVars := mux.Vars(r)
 	uuid := requestVars["product_uuid"]
@@ -74,11 +86,17 @@ func DeleteProduct(rw http.ResponseWriter, r *http.Request) {
 	WriteResponse(rw, http.StatusOK, u.ToDto())
 }
 
+/*
+* Get all products paginated
+ */
 func GetProducts(rw http.ResponseWriter, r *http.Request) {
 	response := domain.GetAllProducts(r)
 	WriteResponse(rw, http.StatusOK, response)
 }
 
+/*
+* Search products
+ */
 func Search(rw http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 

@@ -72,6 +72,18 @@ func CreateOrder(req dto.OrderRequest) (*Order, *errs.AppError) {
 
 }
 
+func GetOrder(uuid string) (*Order, *errs.AppError) {
+	var order Order
+
+	err := db.Database.Where("uuid = ?", uuid).Preload("OrderProducts").First(&order).Error
+
+	if err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+
+	return &order, nil
+}
+
 func GetAllOrders(req *http.Request) paginate.Page {
 
 	model := db.Database.Preload("OrderProducts").Preload("OrderProducts.Product").Model(&Order{})
@@ -83,16 +95,15 @@ func GetAllOrders(req *http.Request) paginate.Page {
 }
 
 func (order *Order) BeforeCreate(*gorm.DB) error {
-
 	order.Uuid = uuid.NewString()
 	return nil
 }
 
-func (orderProduct *OrderProduct) BeforeSave(*gorm.DB) error {
-
+func (orderProduct *OrderProduct) BeforeCreate(*gorm.DB) error {
 	orderProduct.Uuid = uuid.NewString()
 	return nil
 }
+
 func (o Order) ToDto() dto.Order {
 	var products []dto.OrderProduct
 
@@ -104,6 +115,7 @@ func (o Order) ToDto() dto.Order {
 		})
 	}
 	return dto.Order{
+		Uuid:          o.Uuid,
 		Id:            o.Id,
 		Total:         o.Total,
 		OrderProducts: products,

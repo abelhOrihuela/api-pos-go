@@ -69,6 +69,7 @@ func addSignHandler(r *mux.Router) {
 	// Products endpoints
 	s.HandleFunc("/orders", handlers.CreateOrder).Methods(http.MethodPost)
 	s.HandleFunc("/orders", handlers.GetOrders).Methods(http.MethodGet)
+	s.HandleFunc("/orders/{order_uuid}", handlers.GetOrder).Methods(http.MethodGet)
 
 	s.HandleFunc("/products", handlers.GetProducts).Methods(http.MethodGet)
 	s.HandleFunc("/products", handlers.CreateProduct).Methods(http.MethodPost)
@@ -79,6 +80,7 @@ func addSignHandler(r *mux.Router) {
 	s.HandleFunc("/search", handlers.Search).Methods(http.MethodGet)
 
 	s.HandleFunc("/categories", handlers.CreateCategory).Methods(http.MethodPost)
+	s.HandleFunc("/categories/{category_uuid}", handlers.UpdateCategory).Methods(http.MethodPut)
 	s.HandleFunc("/categories", handlers.GetAllCategories).Methods(http.MethodGet)
 
 	// Users endpoints

@@ -23,6 +23,7 @@ type OrderProduct struct {
 }
 
 type Order struct {
+	Uuid          string         `json:"uuid"`
 	Id            int            `json:"id"`
 	Total         float64        `json:"total"`
 	OrderProducts []OrderProduct `json:"order_products" gorm:"foreignKey:OrderId;references:Id"`

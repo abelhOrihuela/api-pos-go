@@ -9,6 +9,8 @@ import (
 	"pos.com/app/dto"
 )
 
+var responseCreatedOrder dto.Order
+
 func TestCreateOrder(t *testing.T) {
 	var productsOrder []dto.OrderProductRequest
 
@@ -28,10 +30,20 @@ func TestCreateOrder(t *testing.T) {
 	writer := makeRequest("POST", "/api/pos/orders", orderRequest, true)
 
 	//parse response
+	json.Unmarshal(writer.Body.Bytes(), &responseCreatedOrder)
+
+	assert.Equal(t, http.StatusOK, writer.Code)
+	assert.Equal(t, orderRequest.Total, responseCreatedOrder.Total)
+	assert.Equal(t, orderRequest.TotalItems, len(responseCreatedOrder.OrderProducts))
+}
+
+func TestGetOrder(t *testing.T) {
 	var response dto.Order
+	writer := makeRequest("GET", "/api/pos/orders/"+responseCreatedOrder.Uuid, nil, true)
+
 	json.Unmarshal(writer.Body.Bytes(), &response)
 
 	assert.Equal(t, http.StatusOK, writer.Code)
-	assert.Equal(t, orderRequest.Total, response.Total)
-	assert.Equal(t, orderRequest.TotalItems, len(response.OrderProducts))
+	assert.Equal(t, 500.0, responseCreatedOrder.Total)
+	assert.Equal(t, 1, len(responseCreatedOrder.OrderProducts))
 }
