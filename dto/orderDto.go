@@ -10,14 +10,14 @@ type OrderRequest struct {
 
 type OrderProductRequest struct {
 	IdProduct int     `json:"idProduct"`
-	Quantity  int16   `json:"quantity"`
+	Quantity  float64 `json:"quantity"`
 	Price     float64 `json:"price"`
 }
 
 type OrderProduct struct {
 	ProductId int     `json:"productId"`
 	OrderId   int     `json:"orderId"`
-	Quantity  int16   `json:"quantity"`
+	Quantity  float64 `json:"quantity"`
 	Price     float64 `json:"price"`
 	Product   Product `json:"product" gorm:"foreignKey:Id;references:ProductId"`
 }

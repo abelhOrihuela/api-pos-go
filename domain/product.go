@@ -2,6 +2,7 @@ package domain
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/morkid/paginate"
@@ -17,12 +18,13 @@ type Product struct {
 	Uuid             string   `gorm:"unique;not null;type:varchar(100);default:null" db:"uuid"`
 	Name             string   `gorm:"not null;type:varchar(100);default:null" db:"name"`
 	Description      string   `gorm:"not null;type:varchar(100);default:null" db:"description"`
+	Metadata         string   `gorm:"not null;type:varchar(100);default:''" db:"metadata"`
 	Barcode          string   `gorm:"unique;not null;type:varchar(100);default:null" db:"barcode"`
 	Price            float64  `gorm:"not null;type:double precision;default:null" db:"price"`
-	CurrentExistence int64    `gorm:"not null;type:int;default:0" db:"current_existence"`
+	CurrentExistence float64  `gorm:"not null;type:double precision;default:null" db:"current_existence"`
 	Unit             string   `gorm:"not null;type:string;default:null" db:"unit"`
 	CategoryID       int      `gorm:"not null;type:int;default:null" db:"category_id"`
-	Category         Category `gorm:"foreignKey:Id;references:CategoryID"`
+	Category         Category `gorm:"foreignKey:CategoryID;references:Id"`
 }
 
 func CreateProduct(req dto.ProductRequest) (*Product, *errs.AppError) {
@@ -119,8 +121,9 @@ func GetAllProducts(req *http.Request) paginate.Page {
 }
 
 func Search(query string) []Product {
+	termSearch := strings.Join(strings.Split(strings.ToLower(query), " "), "-")
 	p := make([]Product, 0)
-	db.Database.Where("barcode LIKE ? OR name LIKE ?", "%"+query+"%", "%"+query+"%").Find(&p)
+	db.Database.Where("barcode LIKE ? OR name LIKE ? OR metadata LIKE ?", "%"+termSearch+"%", "%"+termSearch+"%", "%"+termSearch+"%").Find(&p)
 
 	return p
 }
@@ -128,6 +131,15 @@ func Search(query string) []Product {
 func (product *Product) BeforeCreate(*gorm.DB) error {
 
 	product.Uuid = uuid.NewString()
+	return nil
+}
+
+func (product *Product) BeforeSave(*gorm.DB) error {
+
+	name := strings.Join(strings.Split(strings.ToLower(product.Name), " "), "-")
+	description := strings.Join(strings.Split(strings.ToLower(product.Description), " "), "-")
+
+	product.Metadata = product.Barcode + "," + name + "," + description
 	return nil
 }
 
@@ -144,6 +156,7 @@ func (p Product) ToDto() dto.SingleProduct {
 		Id:               p.Id,
 		Name:             p.Name,
 		Description:      p.Description,
+		Unit:             p.Unit,
 		Barcode:          p.Barcode,
 		Price:            p.Price,
 		CategoryID:       p.CategoryID,

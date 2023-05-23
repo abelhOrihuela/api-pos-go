@@ -17,6 +17,7 @@ type Category struct {
 	Uuid        string `gorm:"unique;not null;type:varchar(100);default:null" db:"uuid"`
 	Name        string `gorm:"not null;type:varchar(50);default:null" db:"name"`
 	Description string `gorm:"not null;type:varchar(100);default:null" db:"description"`
+	Products    []Product
 }
 
 func CreateCategory(req dto.CategoryRequest) (*Category, *errs.AppError) {

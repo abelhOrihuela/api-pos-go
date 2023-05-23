@@ -13,11 +13,11 @@ import (
 
 type Order struct {
 	gorm.Model
-	Id            int            `gorm:"primaryKey;autoIncrement" db:"id"`
-	Uuid          string         `gorm:"unique;not null;type:varchar(100);default:null" db:"uuid"`
-	TotalItems    int            `gorm:"not null;type:int;default:null" db:"total_items"`
-	Total         float64        `gorm:"not null;type:double precision;default:null" db:"total"`
-	OrderProducts []OrderProduct `gorm:"foreignKey:OrderId;references:Id"`
+	Id            int     `gorm:"primaryKey;autoIncrement" db:"id"`
+	Uuid          string  `gorm:"unique;not null;type:varchar(100);default:null" db:"uuid"`
+	TotalItems    int     `gorm:"not null;type:int;default:null" db:"total_items"`
+	Total         float64 `gorm:"not null;type:double precision;default:null" db:"total"`
+	OrderProducts []OrderProduct
 }
 
 type OrderProduct struct {
@@ -25,9 +25,12 @@ type OrderProduct struct {
 	Id        int     `gorm:"primaryKey;autoIncrement" db:"id"`
 	Uuid      string  `gorm:"unique;not null;type:varchar(100)" db:"uuid"`
 	OrderId   string  `gorm:"not null;type:int;default:null" db:"order_id"`
+	Order     Order   `gorm:"foreignKey:OrderId;references:Id"`
 	Total     float64 `gorm:"not null;type:double precision;default:null" db:"total"`
-	Quantity  int16   `gorm:"not null;type:int;default:null" db:"quantity"`
+	Price     float64 `gorm:"not null;type:double precision;default:0" db:"price"`
+	Quantity  float64 `gorm:"not null;type:double precision;default:0" db:"quantity"`
 	ProductId int     `gorm:"not null;type:int;default:null" db:"product_id"`
+	Product   Product `gorm:"foreignKey:ProductId;references:Id"`
 }
 
 func CreateOrder(req dto.OrderRequest) (*Order, *errs.AppError) {
@@ -39,6 +42,7 @@ func CreateOrder(req dto.OrderRequest) (*Order, *errs.AppError) {
 	}
 
 	var products []OrderProduct
+	var productsUpdated []Product
 
 	for _, p := range req.Products {
 
@@ -51,10 +55,15 @@ func CreateOrder(req dto.OrderRequest) (*Order, *errs.AppError) {
 		}
 
 		products = append(products, OrderProduct{
-			Total:     p.Price,
+			Total:     p.Price * float64(p.Quantity),
 			Quantity:  p.Quantity,
 			ProductId: product.Id,
+			Price:     p.Price,
 		})
+
+		product.CurrentExistence -= float64(p.Quantity)
+
+		productsUpdated = append(productsUpdated, product)
 	}
 
 	p := Order{
@@ -68,6 +77,11 @@ func CreateOrder(req dto.OrderRequest) (*Order, *errs.AppError) {
 	if err != nil {
 		return nil, errs.NewUnexpectedDatabaseError("Unexpected error during the creation of order" + err.Error())
 	}
+
+	for _, p := range productsUpdated {
+		db.Database.Save(&p)
+	}
+
 	return &p, nil
 
 }
@@ -86,7 +100,7 @@ func GetOrder(uuid string) (*Order, *errs.AppError) {
 
 func GetAllOrders(req *http.Request) paginate.Page {
 
-	model := db.Database.Preload("OrderProducts").Preload("OrderProducts.Product").Model(&Order{})
+	model := db.Database.Order("created_at DESC").Preload("OrderProducts").Preload("OrderProducts.Product").Model(&Order{})
 	pg := paginate.New()
 
 	page := pg.With(model).Request(req).Response(&[]dto.Order{})

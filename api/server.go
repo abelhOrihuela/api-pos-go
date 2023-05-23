@@ -27,7 +27,9 @@ func (s *Server) Start() error {
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{
 			http.MethodPost,
+			http.MethodPut,
 			http.MethodGet,
+			http.MethodDelete,
 		},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: false,

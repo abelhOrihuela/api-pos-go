@@ -15,7 +15,7 @@ type Product struct {
 	CategoryID       int      `json:"category_id"`
 	Category         Category `json:"category" gorm:"foreignKey:Id;references:CategoryID"`
 	Unit             string   `json:"unit"`
-	CurrentExistence int64    `json:"current_existence"`
+	CurrentExistence float64  `json:"current_existence"`
 	CreatedAt        string   `json:"created_at"`
 	UpdatedAt        string   `json:"updated_at"`
 	DeletedAt        string   `json:"deleted_at"`
@@ -28,8 +28,9 @@ type SingleProduct struct {
 	Name             string  `json:"name"`
 	Description      string  `json:"description"`
 	Barcode          string  `json:"barcode"`
+	Unit             string  `json:"unit"`
 	Price            float64 `json:"price"`
-	CurrentExistence int64   `json:"current_existence"`
+	CurrentExistence float64 `json:"current_existence"`
 	CategoryID       int     `json:"category_id"`
 	CreatedAt        string  `json:"created_at"`
 	UpdatedAt        string  `json:"updated_at"`
@@ -44,7 +45,7 @@ type ProductRequest struct {
 	Price            float64 `json:"price"`
 	CategoryID       int     `json:"category"`
 	Unit             string  `json:"unit"`
-	CurrentExistence int64   `json:"current_existence"`
+	CurrentExistence float64 `json:"current_existence"`
 }
 
 // Validator of ProductRequest

@@ -13,19 +13,21 @@ func main() {
 	godotenv.Load(".env")
 
 	setupDatabase()
-	server := api.NewServer("localhost:3000")
+	server := api.NewServer(":8000")
 	log.Fatal(server.Start())
 }
 
 func setupDatabase() {
 	db.Connect()
-	db.Database.AutoMigrate(&domain.User{})
 
-	db.Database.AutoMigrate(&domain.Category{})
-
-	db.Database.AutoMigrate(&domain.Product{})
-	db.Database.AutoMigrate(&domain.Order{})
-	db.Database.AutoMigrate(&domain.OrderProduct{})
+	if err := db.Database.AutoMigrate(
+		&domain.User{},
+		&domain.Category{},
+		&domain.Product{},
+		&domain.Order{},
+		&domain.OrderProduct{}); err != nil {
+		log.Fatalln(err)
+	}
 
 	/*
 
