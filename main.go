@@ -5,8 +5,6 @@ import (
 
 	"github.com/joho/godotenv"
 	"pos.com/app/api"
-	"pos.com/app/db"
-	"pos.com/app/domain"
 )
 
 func main() {
@@ -18,16 +16,16 @@ func main() {
 }
 
 func setupDatabase() {
-	db.Connect()
+	//db.Connect()
 
-	if err := db.Database.AutoMigrate(
-		&domain.User{},
-		&domain.Category{},
-		&domain.Product{},
-		&domain.Order{},
-		&domain.OrderProduct{}); err != nil {
-		log.Fatalln(err)
-	}
+	// if err := db.Database.AutoMigrate(
+	// 	&domain.User{},
+	// 	&domain.Category{},
+	// 	&domain.Product{},
+	// 	&domain.Order{},
+	// 	&domain.OrderProduct{}); err != nil {
+	// 	log.Fatalln(err)
+	// }
 
 	/*
 
