@@ -11,24 +11,34 @@ import (
 
 var Database *gorm.DB
 
-func Connect() {
+// var connections map[string]*gorm.DB
+
+var connections = make(map[string]*gorm.DB)
+
+func Connect(database string) {
 	var err error
 
 	env := os.Getenv("ENV")
-
 	port := os.Getenv("DB_PORT")
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
-	name := os.Getenv("DB_NAME")
+	name := database //os.Getenv("DB_NAME")
 	passwd := os.Getenv("DB_PASSWD")
 
-	fmt.Printf("ENVIRONMENT: %s \n", os.Getenv("ENV"))
+	fmt.Printf("ENVIRONMENT: %s \n", env)
 
-	if env == "production" {
-		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s", host, user, passwd, name, port, "require", "America/Mexico_City")
-		Database, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	} else if env == "test" {
-		Database, err = gorm.Open(sqlite.Open(name), &gorm.Config{})
+	value, ok := connections[database]
+
+	if ok {
+		Database = value
+	} else {
+		if env == "production" {
+			dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s", host, user, passwd, name, port, "require", "America/Mexico_City")
+			Database, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		} else if env == "test" {
+			Database, err = gorm.Open(sqlite.Open(name), &gorm.Config{})
+		}
+		connections[database] = Database
 	}
 
 	if err != nil {

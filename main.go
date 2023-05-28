@@ -5,29 +5,27 @@ import (
 
 	"github.com/joho/godotenv"
 	"pos.com/app/api"
-	"pos.com/app/db"
-	"pos.com/app/domain"
 )
 
 func main() {
 	godotenv.Load(".env")
 
 	setupDatabase()
-	server := api.NewServer(":8000")
+	server := api.NewServer("3000")
 	log.Fatal(server.Start())
 }
 
 func setupDatabase() {
-	db.Connect()
+	// db.Connect()
 
-	if err := db.Database.AutoMigrate(
-		&domain.User{},
-		&domain.Category{},
-		&domain.Product{},
-		&domain.Order{},
-		&domain.OrderProduct{}); err != nil {
-		log.Fatalln(err)
-	}
+	// if err := db.Database.AutoMigrate(
+	// 	&domain.User{},
+	// 	&domain.Category{},
+	// 	&domain.Product{},
+	// 	&domain.Order{},
+	// 	&domain.OrderProduct{}); err != nil {
+	// 	log.Fatalln(err)
+	// }
 
 	/*
 

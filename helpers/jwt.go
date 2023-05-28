@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"pos.com/app/db"
 	"pos.com/app/domain"
 	"pos.com/app/errs"
 )
@@ -109,5 +110,69 @@ func writeResponse(rw http.ResponseWriter, statusCode int, data interface{}) {
 	rw.WriteHeader(statusCode)
 	if err := json.NewEncoder(rw).Encode(data); err != nil {
 		panic(err)
+	}
+}
+
+func TenantMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+
+		var databaseName string
+		isProd := os.Getenv("ENV") == "production"
+
+		if isProd {
+			domain := strings.Split(r.Host, ":")[0]
+			subdomain := strings.Split(domain, ".")[0]
+			databaseName = "pos_" + subdomain
+		} else {
+			databaseName = "test.db"
+		}
+		//db.Connect(databaseName)
+		SetupDatabase(databaseName, isProd)
+
+		next.ServeHTTP(rw, r)
+
+	})
+}
+
+func SetupDatabase(database string, isProd bool) {
+	db.Connect(database)
+
+	var settings domain.Settings
+
+	err := db.Database.Last(&settings).Error
+
+	if err != nil {
+		autoMigrate(true)
+
+	} else {
+		if isProd {
+			fmt.Println("version db")
+			fmt.Println(settings.VersionDB)
+			fmt.Println(os.Getenv("DB_VERSION"))
+			if settings.VersionDB != os.Getenv("DB_VERSION") {
+
+				autoMigrate(false)
+
+				domain.UpdateVersion(os.Getenv("DB_VERSION"))
+			}
+
+		}
+	}
+
+}
+
+func autoMigrate(createInitialSetting bool) {
+	db.Database.AutoMigrate(&domain.Settings{})
+	db.Database.AutoMigrate(&domain.Product{})
+	db.Database.AutoMigrate(&domain.Order{})
+	db.Database.AutoMigrate(&domain.OrderProduct{})
+	db.Database.AutoMigrate(&domain.User{})
+	db.Database.AutoMigrate(&domain.Category{})
+
+	if createInitialSetting {
+		db.Database.Create(&domain.Settings{
+			Name:      "Punto de venta",
+			VersionDB: "0",
+		})
 	}
 }
