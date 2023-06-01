@@ -25,6 +25,8 @@ func Connect(database string) {
 	name := database //os.Getenv("DB_NAME")
 	passwd := os.Getenv("DB_PASSWD")
 
+	fmt.Println("Database: " + database)
+
 	fmt.Printf("ENVIRONMENT: %s \n", env)
 
 	value, ok := connections[database]

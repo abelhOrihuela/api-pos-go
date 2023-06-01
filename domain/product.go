@@ -90,6 +90,22 @@ func UpdateProduct(uuid string, req dto.ProductRequest) (*Product, *errs.AppErro
 	return &product, nil
 }
 
+func UpdateProductExistence(uuid string, req dto.ProductRequest) (*Product, *errs.AppError) {
+	var product Product
+	err := db.Database.First(&product, "uuid = ?", uuid).Error
+	if err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+
+	product.CurrentExistence += req.CurrentExistence
+
+	if err := db.Database.Save(&product).Error; err != nil {
+		return nil, errs.NewDefaultError(err.Error())
+	}
+
+	return &product, nil
+}
+
 func FindProductByUuid(uuid string) (*Product, *errs.AppError) {
 	var product Product
 	err := db.Database.Where(&Product{Uuid: uuid}).First(&product).Error

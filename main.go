@@ -11,7 +11,7 @@ func main() {
 	godotenv.Load(".env")
 
 	setupDatabase()
-	server := api.NewServer("3000")
+	server := api.NewServer(":5000")
 	log.Fatal(server.Start())
 }
 

@@ -143,7 +143,6 @@ func SetupDatabase(database string, isProd bool) {
 
 	if err != nil {
 		autoMigrate(true)
-
 	} else {
 		if isProd {
 			fmt.Println("version db")
