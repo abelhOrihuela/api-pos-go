@@ -86,6 +86,24 @@ func DeleteProduct(rw http.ResponseWriter, r *http.Request) {
 	WriteResponse(rw, http.StatusOK, u.ToDto())
 }
 
+func UpdateProductExistence(rw http.ResponseWriter, r *http.Request) {
+	requestVars := mux.Vars(r)
+	uuid := requestVars["product_uuid"]
+	var request dto.ProductRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		WriteResponse(rw, http.StatusBadRequest, err.Error())
+		return
+	}
+	u, err := domain.UpdateProductExistence(uuid, request)
+	if err != nil {
+		WriteResponse(rw, http.StatusBadRequest, err.AsMessage())
+		return
+	}
+
+	WriteResponse(rw, http.StatusOK, u.ToDto())
+}
+
 /*
 * Get all products paginated
  */
